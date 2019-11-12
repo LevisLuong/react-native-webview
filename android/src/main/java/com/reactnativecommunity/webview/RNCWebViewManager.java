@@ -1,5 +1,6 @@
 package com.reactnativecommunity.webview;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.DownloadManager;
@@ -9,12 +10,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.Manifest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -37,9 +37,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
-import com.facebook.react.views.scroll.ScrollEvent;
-import com.facebook.react.views.scroll.ScrollEventType;
-import com.facebook.react.views.scroll.OnScrollDispatchHelper;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactContext;
@@ -57,8 +54,11 @@ import com.facebook.react.uimanager.annotations.ReactProp;
 import com.facebook.react.uimanager.events.ContentSizeChangeEvent;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.EventDispatcher;
-import com.reactnativecommunity.webview.events.TopLoadingErrorEvent;
+import com.facebook.react.views.scroll.OnScrollDispatchHelper;
+import com.facebook.react.views.scroll.ScrollEvent;
+import com.facebook.react.views.scroll.ScrollEventType;
 import com.reactnativecommunity.webview.events.TopHttpErrorEvent;
+import com.reactnativecommunity.webview.events.TopLoadingErrorEvent;
 import com.reactnativecommunity.webview.events.TopLoadingFinishEvent;
 import com.reactnativecommunity.webview.events.TopLoadingProgressEvent;
 import com.reactnativecommunity.webview.events.TopLoadingStartEvent;
@@ -115,12 +115,6 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   public static final int COMMAND_INJECT_JAVASCRIPT = 6;
   public static final int COMMAND_LOAD_URL = 7;
   public static final int COMMAND_FOCUS = 8;
-
-  // android commands
-  public static final int COMMAND_CLEAR_FORM_DATA = 1000;
-  public static final int COMMAND_CLEAR_CACHE = 1001;
-  public static final int COMMAND_CLEAR_HISTORY = 1002;
-
   protected static final String REACT_CLASS = "RNCWebView";
   protected static final String HTML_ENCODING = "UTF-8";
   protected static final String HTML_MIME_TYPE = "text/html";
@@ -133,8 +127,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
   protected RNCWebChromeClient mWebChromeClient = null;
   protected boolean mAllowsFullscreenVideo = false;
-  protected @Nullable String mUserAgent = null;
-  protected @Nullable String mUserAgentWithApplicationName = null;
+  protected @Nullable
+  String mUserAgent = null;
+  protected @Nullable
+  String mUserAgentWithApplicationName = null;
 
   public RNCWebViewManager() {
     mWebViewConfig = new WebViewConfig() {
@@ -272,7 +268,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
         break;
       case "LOAD_CACHE_ELSE_NETWORK":
         cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK;
-        break;
+        break;  
       case "LOAD_NO_CACHE":
         cacheMode = WebSettings.LOAD_NO_CACHE;
         break;
@@ -551,19 +547,17 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   @Override
   public @Nullable
   Map<String, Integer> getCommandsMap() {
-    return MapBuilder.<String, Integer>builder()
-      .put("goBack", COMMAND_GO_BACK)
-      .put("goForward", COMMAND_GO_FORWARD)
-      .put("reload", COMMAND_RELOAD)
-      .put("stopLoading", COMMAND_STOP_LOADING)
-      .put("postMessage", COMMAND_POST_MESSAGE)
-      .put("injectJavaScript", COMMAND_INJECT_JAVASCRIPT)
-      .put("loadUrl", COMMAND_LOAD_URL)
-      .put("requestFocus", COMMAND_FOCUS)
-      .put("clearFormData", COMMAND_CLEAR_FORM_DATA)
-      .put("clearCache", COMMAND_CLEAR_CACHE)
-      .put("clearHistory", COMMAND_CLEAR_HISTORY)
-      .build();
+    Map map = MapBuilder.of(
+      "goBack", COMMAND_GO_BACK,
+      "goForward", COMMAND_GO_FORWARD,
+      "reload", COMMAND_RELOAD,
+      "stopLoading", COMMAND_STOP_LOADING,
+      "postMessage", COMMAND_POST_MESSAGE,
+      "injectJavaScript", COMMAND_INJECT_JAVASCRIPT,
+      "loadUrl", COMMAND_LOAD_URL
+    );
+    map.put("requestFocus", COMMAND_FOCUS);
+    return map;
   }
 
   @Override
@@ -613,16 +607,6 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
         break;
       case COMMAND_FOCUS:
         root.requestFocus();
-        break;
-      case COMMAND_CLEAR_FORM_DATA:
-        root.clearFormData();
-        break;
-      case COMMAND_CLEAR_CACHE:
-        boolean includeDiskFiles = args != null && args.getBoolean(0);
-        root.clearCache(includeDiskFiles);
-        break;
-      case COMMAND_CLEAR_HISTORY:
-        root.clearHistory();
         break;
     }
   }
